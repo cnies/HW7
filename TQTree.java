@@ -126,14 +126,17 @@ public class TQTree {
 			buildDefault();
 			return;
 		}
+		//Try to use the buildSubTree method here
 		try{
 			this.root = buildSubtree(reader); 
 		}
+		//If the file is in the wrong format, build default tree
 		catch (ParseException e){
 			System.err.println(e.getMessage());
 			System.err.println("Building default Question Tree");
 			buildDefault();
 		}
+		//More exception checking
 		try {
 			reader.close();
 		} catch ( IOException e ) {
@@ -147,24 +150,29 @@ public class TQTree {
 	 */ 
 	public void play()
 	{
+		//Declare some helpful stuff
 		Scanner input = new Scanner(System.in);
 		TQNode currentNode = this.root;
 		TQNode lastQuestion;
 		boolean lastAnswerYes;
+		//We know we need to do this at least once, so do...while works well here
 		do{
 			System.out.println(currentNode.getData());
 			String response = input.nextLine();
+			//If user's response is affirmative, move down yes part of the tree
 			if (readResponse(response)) {
 				lastAnswerYes = true;
 				lastQuestion = currentNode;
 				currentNode = currentNode.getYesChild();
 			}
+			//If the user's response is negative, move down no side of the tree
 			else{
 				lastAnswerYes = false;
 				lastQuestion = currentNode;
 				currentNode = currentNode.getNoChild();
 			}
 		} while (!isLeaf(currentNode));
+		//Once we are at a leaf, take a guess
 		System.out.println("My guess is "+currentNode.getData()+". Am I correct?");
 		String response = input.nextLine();
 		if (readResponse(response)){
@@ -172,6 +180,7 @@ public class TQTree {
 			return;
 		}
 		else{
+			//Set up conditions for adding to the TQTree with a new answer
 			System.out.println("Okay, what was it?");
 			String newAnswer = fixString(input.nextLine(), false);
 			System.out.println("Give me a question that would distinguish "+newAnswer+
@@ -192,10 +201,14 @@ public class TQTree {
 	{
 		File toWrite = new File(filename);
 		PrintWriter writer = new PrintWriter(toWrite);
+		//Get the linkedlist containing the nodes inorder
 		LinkedList<TQNode> nodes = traversePreorder();
 		TQNode node;
+		//While the linkedlist contains nodes to save
 		while (nodes.size()>0){
+			//Get the next node
 			node = nodes.poll();
+			//Save in proper format (question or answer?)
 			if (!isLeaf(node)){
 				writer.println("Q:"+node.getData());
 			}
@@ -211,14 +224,18 @@ public class TQTree {
 	 * */ 
 	public void print()
 	{
+		//Get a list of nodes in level order
 		LinkedList<TQNode> nodes = traverseLevelOrder();
 		TQNode node;
+		//While the linkedlist contains nodes to print
 		while (nodes.size()>0){	
 			node = nodes.poll();
 			int i = node.getIndex();
+			//If statement to prevent nullpointer exceptions
 			if (!isLeaf(node)){
 				int iY = node.getYesChild().getIndex();
 				int iN = node.getNoChild().getIndex();
+				//Print with index of current node and the children
 				System.out.printf("%d:   '%s'   no: (%d)   yes: (%d)\n", i, node.getData(),
 						iN, iY);
 			}
@@ -243,6 +260,7 @@ public class TQTree {
 		this.root = rootNode;
 	}
 
+	//Bleh, just a helper method to put responses in the correct format
 	private String fixString(String toFix, boolean isQuestion){
 		if (toFix.length() == 0){
 			if (isQuestion) return toFix+="?";
@@ -269,7 +287,7 @@ public class TQTree {
 
 
 
-
+	//Really helpful, though exactly what it says on the tin
 	private boolean isLeaf(TQNode toCheck){
 		if (toCheck.getNoChild() == null && toCheck.getYesChild() == null)
 			return true;
@@ -277,6 +295,7 @@ public class TQTree {
 			return false;
 	}
 
+	//Also a bit helpful
 	private void addAt(TQNode toAdd, TQNode addAt, boolean isYes){
 		if (isYes) {
 			addAt.setYesChild(toAdd);
@@ -288,7 +307,8 @@ public class TQTree {
 
 
 	//Adds in a new answer, with a new question, the new answer to that question
-	//and the old answer to the new question (one of them yes, the other no)
+	//and the old answer to the new question (one of them yes, the other no). Used
+	//when the user thinks of something not in the tree itself
 	private void addNewQuestion(String newQuestion, String newAnswer,
 			boolean isNewAnswerYes, TQNode oldQuestion, 
 			boolean wasOldAnswerYes){
@@ -328,6 +348,8 @@ public class TQTree {
 		return toReturn;
 	}
 
+	//Iterative version, returns a Queue that contains a list of all the nodes
+	//in the tree in level-order, for use in the print() method
 	private LinkedList<TQNode> traverseLevelOrder(){
 		LinkedList<TQNode> theQueue = new LinkedList<TQNode>();
 		LinkedList<TQNode> toReturn = new LinkedList<TQNode>();
