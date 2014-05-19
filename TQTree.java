@@ -133,7 +133,12 @@ public class TQTree {
 		//If the file is in the wrong format, build default tree
 		catch (ParseException e){
 			System.err.println(e.getMessage());
-			System.err.println("Building default Question Tree");
+			System.err.println("Building Default Question Tree...");
+			buildDefault();
+		}
+		catch (IndexOutOfBoundsException e){
+			System.err.println("Incorrect File Format: line "+reader.getLineNumber());
+			System.err.println("Building Default Question Tree...");
 			buildDefault();
 		}
 		//More exception checking
